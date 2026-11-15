@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Moon Base 101</title>
+<style>
+@font-face{font-family:Technor;src:url('__FONT_URL__') format('truetype');font-weight:200 900;font-display:swap}body,button,input,select{font-family:Technor,system-ui,sans-serif!important}
+:root{color-scheme:dark;font:15px system-ui,sans-serif;--ink:#eef7ff;--muted:#9aaec3;--teal:#74e8cc;--panel:#102033;--line:#30465c}
+*{box-sizing:border-box}body{margin:0;background:#07101c;color:var(--ink)}button,input,select{font:inherit}button{border:1px solid var(--line);color:var(--ink);background:#172d44;border-radius:12px;min-height:44px;padding:8px 12px;touch-action:manipulation}button:active,button.held{background:#2a5264}button.primary{background:var(--teal);color:#06221d;border:0;font-weight:750}button:disabled{opacity:.45}input,select{color:var(--ink);background:#0a1725;border:1px solid var(--line);padding:10px;border-radius:10px} [hidden]{display:none!important}
+#join{display:grid;place-items:center;min-height:100dvh;padding:22px;background:radial-gradient(ellipse at top,#153651,#07101c 60%)}form{display:grid;gap:15px;width:min(100%,390px);padding:24px;border:1px solid var(--line);background:var(--panel);border-radius:20px}h1{font-size:clamp(24px,7vw,36px);margin:0;line-height:1.03}p{margin:0;color:var(--muted);line-height:1.4}form label{display:grid;gap:7px}#joinError{color:#ffb6a4}
+#game{height:100dvh;display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);overflow:hidden}
+header{background:#0e1d2c;padding:8px 12px;z-index:1}header strong{color:var(--teal)}header p{font-size:12px}.bar{display:flex;align-items:center;justify-content:space-between;gap:8px}.bar button{min-height:34px;padding:3px 10px}#meters{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;margin:4px 0}.danger{color:#ff9883}#stage{flex:1;position:relative;min-height:130px;background:#070d16}canvas{display:block;width:100%;height:100%;touch-action:none}#select{position:absolute;top:8px;left:8px;right:8px;font-size:12px;pointer-events:none;color:#fcdfa0;text-shadow:0 1px 3px #000}#progress{position:absolute;left:16px;right:16px;bottom:8px;width:calc(100% - 32px);accent-color:var(--teal);height:8px}
+#controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:8px 12px;background:#0e1d2c}#note{grid-column:1/-1;min-height:2.1em;color:#cad5e2;font-size:12px}#stick{width:113px;height:113px;border-radius:50%;position:relative;border:1px solid #45637a;background:radial-gradient(circle,#25445b,#112239);touch-action:none;align-self:center;justify-self:center;display:grid;place-items:center}#thumb{width:47px;height:47px;border-radius:50%;background:#5faeae;border:2px solid #abe0df;pointer-events:none}#actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}#actions button{font-size:12px;padding:5px 4px}#mine{touch-action:none}
+#tools{position:absolute;right:10px;left:10px;bottom:10px;padding:12px;z-index:2;background:#0d2033f5;border:1px solid #47667f;border-radius:15px;max-height:100%;overflow:auto}#tools>div{display:flex;flex-wrap:wrap;gap:6px;margin:7px 0}#tools button{font-size:12px}
+@media (orientation:landscape) and (max-height:560px){#controls{grid-template-columns:120px 1fr;padding:4px 10px}#stick{width:80px;height:80px}#thumb{width:32px;height:32px}#actions{grid-template-columns:repeat(4,minmax(0,1fr))}#note{min-height:1.1em}header{padding:4px 10px}}
+button,input,select{border-radius:5px}body{background:#070d16}header{background:#0a1725;border-bottom:1px solid #355268}header strong{color:#ffd67d}#meters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 10px;margin:8px 0}.vital{display:grid;gap:4px;font-size:10px;color:#b7cad8}.vital span{display:flex;justify-content:space-between;gap:4px}.vital b{color:#f1f7ff}.vital i{display:block;height:5px;background:#293542;overflow:hidden}.vital em{display:block;height:100%;transition:width .18s;width:0;background:var(--color)}#quest{padding:7px 9px;border-left:3px solid #ffce67;background:#132234;font-size:12px;color:#f4d891}#select{color:#e4f5ff;background:#081522b8;right:auto;max-width:calc(100% - 16px);padding:5px 8px;border:1px solid #345069}#controls{background:#0a1725;border-top:1px solid #355268}#tools{background:#0b1c2bf7;border-color:#b19453;border-radius:5px}#tools>p{color:#ffda83}#tools select{max-width:100%}#mine.primary{background:#164e53;color:#dafff4;border:1px solid #4c9a91}#mine.demolition{background:#683c33;border-color:#dc8666;color:#fff3e7}#note{min-height:1.4em}#actions .selected{border-color:#efab75;background:#573c34}#quest-toggle,#mobile-fullscreen{font-size:11px}#stick{border-radius:50%}#thumb{border-radius:50%}#stage{background:radial-gradient(ellipse,#142035,#070d16)}
+@media(max-width:380px){header{padding:6px 8px}.bar{gap:4px}.bar button{font-size:11px;padding:3px 6px}#meters{gap:5px}#controls{gap:6px;padding:6px 8px}#stick{width:94px;height:94px}}
+@media(orientation:landscape) and (max-height:560px){#game{padding-left:164px}header{position:absolute;top:0;bottom:0;left:0;width:164px;overflow:auto;border-right:1px solid #355268}.bar{flex-wrap:wrap}#meters{grid-template-columns:1fr;gap:10px;margin:14px 0}.vital{font-size:11px}#controls{grid-template-columns:90px 1fr}#stage{min-height:100px}}
+#chat-panel{position:absolute;z-index:4;left:8px;right:8px;bottom:8px;padding:10px;background:#081827f5;border:1px solid #5d8c9b;max-height:75%;display:flex;flex-direction:column;gap:8px}#chat-messages{overflow:auto;min-height:60px;max-height:180px;font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}#chat-messages p{padding:3px 0;color:#e4f1fb}#chat-form{display:flex;gap:6px;width:100%;padding:0;border:0;border-radius:0;background:none}#chat-input{min-width:0;flex:1;font-size:16px}#chat-close{min-height:30px;padding:2px 8px}#chat-panel .bar{flex-shrink:0}
+#game.hud-hidden{padding:0}.hud-hidden header,.hud-hidden #controls,.hud-hidden #select,.hud-hidden #progress{display:none}
+</style>
+</head>
+<body>
+<main id="join">
+<form id="joinForm">
+  <p>Moon Base 101 · __BUILD__</p>
+  <label>Język <select data-language><option value="en">English</option><option value="pl">Polski</option></select></label>
+  <h1>Dołącz do ekspedycji</h1>
+  <p>Zagraj jako osobny astronauta. Każdy telefon ma własną postać i plecak.</p>
+  <label>Imię astronauty <input id="name" maxlength="20" placeholder="Np. Atlas" autocomplete="off"></label>
+  <button class="primary" type="submit">Dołącz do gry</button>
+  <p id="joinError" role="status"></p>
+</form>
+</main>
+<main id="game" hidden>
+<header>
+  <div class="bar"><div><strong id="planet"></strong> <span id="event"></span></div><button id="quest-toggle" aria-expanded="true">Zwiń cel</button><button id="mobile-fullscreen">Pełny ekran</button><button id="leave">Wyjdź</button></div>
+  <div id="meters"></div>
+  <p id="quest"></p>
+</header>
+<section id="stage">
+  <canvas id="map" aria-label="Mapa powierzchni"></canvas>
+  <span id="select"></span>
+  <progress id="progress" value="0" max="1" hidden></progress>
+  <section id="chat-panel" hidden aria-label="Czat wszystkich graczy">
+    <div class="bar"><strong>Czat ekspedycji</strong><button id="chat-close">Zamknij</button></div>
+    <div id="chat-messages" role="log" aria-live="polite"></div>
+    <form id="chat-form"><input id="chat-input" maxlength="160" placeholder="Napisz do wszystkich…" aria-label="Wiadomość"><button type="submit">Wyślij</button></form>
+  </section>
+  <section id="tools" hidden>
+    <label>Język <select data-language><option value="en">English</option><option value="pl">Polski</option></select></label>
+    <div class="bar"><p id="cargo"></p><button id="close-tools">Zamknij plecak</button></div>
+    <div><select id="drop-item" aria-label="Przedmiot do wyrzucenia"></select><button id="drop-one">Wyrzuć 1</button><button id="drop-all">Wyrzuć całość</button></div>
+    <div><button data-action="backpack">Plecak +15 kg</button><button data-action="flag">Postaw flagę · H na PC</button><button id="grant" hidden>Sandbox · +100 wybranego przedmiotu</button></div>
+    <div><label>Limit FPS <select id="fps"><option value="30">30</option><option value="60" selected>60</option><option value="120">120</option><option value="0">Bez limitu</option></select></label></div>
+    <div><button data-action="water">Zrób wodę</button><button data-action="food">Zrób posiłek</button><button data-action="drink">Napij się</button><button data-action="eat">Zjedz</button><button data-action="heal">Apteczka</button><button data-action="repair">Napraw skafander</button><button data-action="tool">Ulepsz narzędzie</button><button data-action="flare">Flara</button></div>
+    <div><select id="structure" aria-label="Rodzaj budynku"><option>Śluza</option><option>Habitat</option><option>Panel słoneczny</option><option>Generator RTG</option><option>Generator tlenu</option><option>Szklarnia</option><option>Magazyn</option><option>Antena</option><option>Laboratorium</option><option>Osłona</option></select><button id="build">Buduj na polu</button></div>
+    <div><select id="destination" aria-label="Cel podróży"><option value="Moon">Księżyc</option><option value="Mars">Mars</option><option value="Venus">Wenus</option></select><button id="travel">Leć ze stacji</button></div>
+    <div><button data-action="wave">Pomachaj</button><button data-action="high_five">Piątka</button><button data-action="dance">Taniec</button><button data-action="respawn">Odrodź</button></div>
+  </section>
+</section>
+<section id="controls" aria-label="Sterowanie">
+  <p id="note" role="status">Wczytuję powierzchnię…</p>
+  <div id="stick" aria-label="Joystick ruchu"><div id="thumb"></div></div>
+  <div id="actions"><button id="mine" class="primary">Kop · przytrzymaj</button><button id="demolish" aria-pressed="false">Rozbiórka</button><button data-action="enter">Wejdź / wysiądź</button><button data-action="survey">Zbadaj</button><button id="menu">Plecak i akcje</button><button id="chat-toggle">Czat</button></div>
+</section>
+</main>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+let language='en';
+try{if(localStorage.getItem('moon-base-101-language')==='pl')language='pl';}catch{}
+let catalogs={en:{},pl:{}};
+let englishSources=new Map();
+let messageTemplates={en:[],pl:[]};
+function t(source,...args){
+  const key=Object.hasOwn(catalogs.pl,source)?source:(englishSources.get(source)??source);
+  const label=catalogs[language][key]??source;
+  return args.length?label.replace(/\{(\d+)\}/g,(_,i)=>args[i]??''):label;
+}
+const fields=/\{[^{}]*\}/g;
+function makeMessageTemplates(en,pl){
+  const templates={en:[],pl:[]};
+  const escape=value=>value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  for(const [key,english] of Object.entries(en)){
+    const polish=pl[key];
+    if(!polish||polish===english||!polish.match(fields)||!english.match(fields))continue;
+    for(const [lang,source,destination] of [['en',polish,english],['pl',english,polish]]){
+      const parts=source.split(fields);
+      if(!parts[0]&&!parts.at(-1))continue;
+      templates[lang].push({prefix:parts[0],pattern:new RegExp('^'+parts.map(escape).join('([\\s\\S]+?)')+'$'),destination});
+    }
+  }
+  return templates;
+}
+function tMessage(source){
+  const direct=t(source);
+  if(direct!==source||!source)return direct;
+  for(const {prefix,pattern,destination} of messageTemplates[language]){
+    if(!source.startsWith(prefix))continue;
+    const match=pattern.exec(source);
+    if(!match)continue;
+    let index=0;
+    return destination.replace(fields,()=>t(match[++index]??''));
+  }
+  return source;
+}
+const originalLabels=[];
+for(const root of [$('join'),$('game')]){
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  while(walker.nextNode()){
+    const node=walker.currentNode;
+    if(node.textContent.trim()&&!node.parentElement.closest('[data-language]')) originalLabels.push([node,node.textContent.trim()]);
+  }
+}
+const originalAttributes=[...document.querySelectorAll('[placeholder],[aria-label]')].flatMap(element=>['placeholder','aria-label'].filter(attribute=>element.hasAttribute(attribute)).map(attribute=>[element,attribute,element.getAttribute(attribute)]));
+function renderLanguage(){
+  document.documentElement.lang=language;
+  for(const [node,key] of originalLabels)if(node.isConnected)node.textContent=t(key);
+  for(const [element,attribute,key] of originalAttributes)element.setAttribute(attribute,t(key));
+  for(const select of document.querySelectorAll('[data-language]'))select.value=language;
+  document.querySelectorAll('.vital span').forEach((label,i)=>label.firstChild.textContent=t(meterNames[i]));
+  $('quest-toggle').textContent=t(questCollapsed?'Pokaż cel':'Zwiń cel');
+  $('mine').textContent=t(demolishing?'Rozbieraj · przytrzymaj':'Kop · przytrzymaj');
+  $('chat-toggle').textContent=unreadChat?t('Czat · {0}',unreadChat):t('Czat');
+}
+const localeLoad=Promise.all(['en','pl'].map(lang=>fetch(location.pathname+'/locales/'+lang+'.json').then(response=>response.json())))
+  .then(([en,pl])=>{catalogs={en,pl};englishSources=new Map(Object.entries(en).map(([pl,en])=>[en,pl]));messageTemplates=makeMessageTemplates(en,pl);renderLanguage();})
+  .catch(()=>{language='pl';renderLanguage();});
+for(const select of document.querySelectorAll('[data-language]'))select.onchange=()=>{
+  language=select.value;
+  try{localStorage.setItem('moon-base-101-language',language);}catch{}
+  renderLanguage();
+};
+const canvas=$('map'), ctx=canvas.getContext('2d');
+const randomKey=()=>Array.from(crypto.getRandomValues(new Uint8Array(16)), n=>n.toString(16).padStart(2,'0')).join('');
+let key=randomKey();
+try {key=sessionStorage.getItem(location.pathname)||key;sessionStorage.setItem(location.pathname,key)} catch {}
+let name='', joined=false, pending=false, doMine=false, choice=null, direction=[0,0], command=null, data=null, smooth=null, projections=[], connection=0;
+let generation=0;
+const tabNonce=randomKey();
+let identityChannel=null;
+try{identityChannel=new BroadcastChannel('moon-base-101-player-'+location.pathname);identityChannel.onmessage=event=>{
+  const message=event.data;
+  if(message?.key!==key||(message.type==='probe'&&message.nonce===tabNonce))return;
+  if(message.type==='probe'&&(joined||tabNonce<message.nonce))identityChannel.postMessage({type:'occupied',key,nonce:message.nonce});
+  if(message.type==='occupied'&&message.nonce===tabNonce){key=randomKey();try{sessionStorage.setItem(location.pathname,key);}catch{}}
+};}catch{}
+let demolishing=false, latency=0;
+let fpsLimit=60,lastTick=performance.now(),receivedAt=performance.now(),lastBody='';
+let questCollapsed=false,hudHidden=false,nextFrame=0;
+const crewMotion=new Map();
+const tileCache=new Map();let sortedTiles=[];const lookCache=new Map();
+let socket=null,opening=null;const requests=[];
+let lastChatSequence=0, unreadChat=0;
+let sprites={}, atlas=null;
+const tintedSprites=new Map();
+const atlasImage=new Image();
+atlasImage.src=location.pathname+'/atlas.png';
+Promise.all([fetch(location.pathname+'/sprites.json').then(r=>{if(!r.ok)throw Error('atlas');return r.json();}),atlasImage.decode()]).then(([manifest])=>{sprites=manifest;atlas=atlasImage;}).catch(()=>{});
+const meterNames=['Zdrowie','Tlen','Sytość','Nawodnienie','Szczelność'];
+const meterColors=['#f07b9c','#52c9f0','#c2d96a','#6daeea','#7ec6ba'];
+meterNames.forEach((label,i)=>{const meter=document.createElement('div');meter.className='vital';meter.style.setProperty('--color',meterColors[i]);meter.innerHTML=`<span>${label}<b id="vital-number-${i}"></b></span><i><em id="vital-fill-${i}"></em></i>`;$('meters').append(meter);});
+function connectSocket(){
+  if(socket?.readyState===WebSocket.OPEN)return Promise.resolve();
+  if(opening)return opening;
+  opening=new Promise((resolve,reject)=>{
+    const current=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+location.pathname+'/socket');socket=current;
+    current.onopen=()=>{opening=null;resolve();};current.onerror=()=>reject(Error(t('Nie można połączyć się z hostem przez WebSocket.')));
+    current.onmessage=event=>{const next=requests.shift();if(!next)return;clearTimeout(next.timer);try{const value=JSON.parse(event.data);latency=Math.min(10000,Math.round(performance.now()-next.began));if(value.error)next.reject(Error(value.error));else next.resolve(value);}catch(error){next.reject(error);}};
+    current.onclose=()=>{opening=null;for(const request of requests.splice(0)){clearTimeout(request.timer);request.reject(Error(t('Host zakończył połączenie.')));}reject(Error(t('Host zakończył połączenie.')));if(joined){joined=false;generation++;stop();data=null;$('game').hidden=true;$('join').hidden=false;$('joinError').textContent=t('Host zakończył sesję lub utracono połączenie.');}};
+  });return opening;
+}
+async function send(payload){await connectSocket();return new Promise((resolve,reject)=>{const request={resolve,reject,began:performance.now(),timer:setTimeout(()=>{reject(Error(t('Host nie odpowiada.')));socket?.close();},3000)};requests.push(request);socket.send(JSON.stringify(payload));});}
+$('joinForm').addEventListener('submit',async event=>{
+  event.preventDefault();
+  const button=event.currentTarget.querySelector('button');
+  await localeLoad;
+  button.disabled=true; $('joinError').textContent=t('Łączenie…');
+  name=$('name').value.trim();
+  try{localStorage.setItem('moon-base-101-name',name);}catch{}
+  try {
+    if(identityChannel){identityChannel.postMessage({type:'probe',key,nonce:tabNonce});await new Promise(resolve=>setTimeout(resolve,150));}
+    apply(await send({key,name}));
+    joined=true; generation++; $('join').hidden=true; $('game').hidden=false;
+  } catch(error) {$('joinError').textContent=t(error.message);}
+  finally{button.disabled=false;}
+});
+async function update(){
+  if(!joined||pending||document.hidden)return;
+  pending=true;
+  const current=generation;
+  const action=command;command=null;
+  try {
+    const state=await send({key,name,dx:direction[0],dy:direction[1],mining:doMine?choice:null,demolishing,latency_ms:latency,action});
+    if(current===generation) apply(state);
+  } catch(error) {if(current===generation){$('note').textContent=t('Połączenie przerwane. {0}',t(error.message));if(performance.now()-connection>8000){joined=false;generation++;stop();data=null;smooth=null;$('game').hidden=true;$('join').hidden=false;$('joinError').textContent=t('Host zakończył sesję lub utracono połączenie. Dołącz ponownie po uruchomieniu hosta.');}}}
+  finally {pending=false;}
+}
+setInterval(update,50);
+function stop(){direction=[0,0];$('thumb').style.transform='';doMine=false;$('mine').classList.remove('held');}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
+$('leave').onclick=()=>{
+  joined=false;generation++;stop();command=null;data=null;smooth=null;choice=null;
+  send({key,name,action:{kind:'leave'}}).catch(()=>{});
+  $('game').hidden=true;$('join').hidden=false;$('joinError').textContent='';
+};
+function act(kind,target){command=target===undefined?{kind}:{kind,target};update();}
+document.querySelectorAll('[data-action]').forEach(button=>button.onclick=()=>act(button.dataset.action));
+$('menu').onclick=()=>{$('tools').hidden=!$('tools').hidden;stop();};
+$('close-tools').onclick=()=>{$('tools').hidden=true;};
+$('grant').onclick=()=>act('grant',[dropItem.selectedIndex,100]);
+$('fps').onchange=()=>{fpsLimit=Number($('fps').value);nextFrame=0;try{localStorage.setItem('moon-base-101-fps',$('fps').value);}catch{}};
+try{
+  $('name').value=localStorage.getItem('moon-base-101-name')??localStorage.getItem('artemis-name')??'';
+  const saved=localStorage.getItem('moon-base-101-fps')??localStorage.getItem('artemis-fps');
+  if([...$('fps').options].some(option=>option.value===saved)){$('fps').value=saved;fpsLimit=Number(saved);}
+}catch{}
+$('chat-toggle').onclick=()=>{stop();$('tools').hidden=true;$('chat-panel').hidden=!$('chat-panel').hidden;if(!$('chat-panel').hidden){unreadChat=0;$('chat-toggle').textContent=t('Czat');$('chat-input').focus();}};
+$('chat-close').onclick=()=>{$('chat-panel').hidden=true;$('chat-input').blur();};
+$('chat-form').onsubmit=event=>{event.preventDefault();const text=$('chat-input').value.trim();if(text){act('chat',text);$('chat-input').value='';}};
+$('quest-toggle').onclick=()=>{questCollapsed=!questCollapsed;$('quest').hidden=questCollapsed;$('quest-toggle').textContent=t(questCollapsed?'Pokaż cel':'Zwiń cel');$('quest-toggle').setAttribute('aria-expanded',String(!questCollapsed));};
+addEventListener('keydown',event=>{
+  if(!joined||event.repeat||event.code!=='F4')return;
+  event.preventDefault();
+  hudHidden=!hudHidden;
+  $('game').classList.toggle('hud-hidden',hudHidden);
+  if(hudHidden){stop();$('tools').hidden=true;$('chat-panel').hidden=true;document.activeElement?.blur();}
+});
+$('mobile-fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await $('game').requestFullscreen();}catch{$('note').textContent=t('Ta przeglądarka nie udostępnia pełnego ekranu.');}};
+$('demolish').onclick=()=>{stop();demolishing=!demolishing;$('mine').textContent=t(demolishing?'Rozbieraj · przytrzymaj':'Kop · przytrzymaj');$('mine').classList.toggle('demolition',demolishing);$('demolish').classList.toggle('selected',demolishing);$('demolish').setAttribute('aria-pressed',String(demolishing));$('note').textContent=t(demolishing?'Wybierz budynek i przytrzymaj Rozbieraj.':'Wybierz złoże i przytrzymaj Kop.');};
+const itemNames=['Regolit','Krzem','Lód wodny','Tytan','Hel-3','Rzadkie minerały','Próbka skały','Racja żywnościowa','Posiłek','Woda','Apteczka'];
+const dropItem=$('drop-item');
+itemNames.forEach((name,kind)=>dropItem.add(new Option(name,kind)));
+function updateDropButtons(){
+  const empty=!(data?.cargo[dropItem.selectedIndex]>0);
+  $('drop-one').disabled=empty;
+  $('drop-all').disabled=empty;
+}
+dropItem.onchange=updateDropButtons;
+$('drop-one').onclick=()=>act('drop',[dropItem.selectedIndex,0]);
+$('drop-all').onclick=()=>act('drop',[dropItem.selectedIndex,1]);
+updateDropButtons();
+$('build').onclick=()=>{if(choice){act('build',[...choice,$('structure').selectedIndex]);$('tools').hidden=true;}else $('note').textContent=t('Zamknij plecak i wybierz pole na mapie.');};
+$('travel').onclick=()=>{act('travel',$('destination').value);$('tools').hidden=true;};
+const stick=$('stick');
+function steer(event){
+  const box=stick.getBoundingClientRect(), radius=box.width*.43;
+  let x=(event.clientX-box.left-box.width/2)/radius,y=(event.clientY-box.top-box.height/2)/radius;
+  const len=Math.max(1,Math.hypot(x,y));x/=len;y/=len;
+  direction=[x,y];
+  $('thumb').style.transform='translate('+x*radius+'px,'+y*radius+'px)';
+}
+stick.onpointerdown=event=>{stick.setPointerCapture(event.pointerId);steer(event);};
+stick.onpointermove=event=>{if(stick.hasPointerCapture(event.pointerId))steer(event);};
+stick.onlostpointercapture=()=>{direction=[0,0];$('thumb').style.transform='';};
+$('mine').onpointerdown=event=>{if(!choice){$('note').textContent=t('Najpierw wybierz pole na mapie.');return;}event.currentTarget.setPointerCapture(event.pointerId);doMine=true;$('mine').classList.add('held');update();};
+$('mine').onlostpointercapture=()=>{doMine=false;$('mine').classList.remove('held');};
+canvas.onpointerdown=event=>{
+  const box=canvas.getBoundingClientRect(),x=event.clientX-box.left,y=event.clientY-box.top;
+  const tile=projections.slice().reverse().find(p=>Math.abs(x-p.x)/p.w+Math.abs(y-p.y)/p.h<=1);
+  if(tile){choice=tile.cell.slice(0,2);selection();}
+};
+const terrain={HighlandRegolith:'Regolit',MariaBasalt:'Bazalt',CraterFloor:'Dno krateru',CraterRim:'Krawędź krateru',TitaniumOutcrop:'Żyła tytanu',Helium3Deposit:'Złoże helu-3',RareMeteoriteDeposit:'Złoże meteorytowe',SubsurfaceIceVein:'Żyła lodu',TitaniumOre:'Tytan',SiliconVein:'Krzem',Ilmenite:'Ilmenit'};
+function selection(){
+  const cell=choice&&data?.tiles.find(t=>t[0]===choice[0]&&t[1]===choice[1]);
+  $('select').textContent=cell?t('Wybrane pole {0} · {1} · {2}',choice.join(', '),t(cell[5]||structureLabels[cell[4]]||terrain[cell[3]]||cell[3]),cell[6]):t('Dotknij pola, aby wybrać cel kopania.');
+}
+function apply(value){
+  connection=performance.now();
+  if(!value.ready){data=null;smooth=null;$('note').textContent=t('Wczytuję planetę…');return;}
+  if(!data||data.body!==value.body){choice=null;smooth=value.pos.slice();crewMotion.clear();}
+  const full=value.full_map!==false||lastBody!==value.body;
+  if(full)tileCache.clear();
+  let changed=full||value.tiles.length>0;
+  for(const tile of value.tiles)tileCache.set(tile[0]+','+tile[1],tile);
+  const [cx,cy]=value.view||value.pos.map(Math.round);
+  for(const [key,tile] of tileCache){if(Math.abs(tile[0]-cx)>13||Math.abs(tile[1]-cy)>13||Math.abs(tile[0]-cx)+Math.abs(tile[1]-cy)>17){tileCache.delete(key);changed=true;}}
+  if(changed)sortedTiles=[...tileCache.values()].sort((a,b)=>(a[0]+a[1])-(b[0]+b[1]));
+  value.tiles=sortedTiles;lastBody=value.body;receivedAt=performance.now();lookCache.clear();for(const look of value.looks||[])lookCache.set(look[0],look);
+  data=value; $('planet').textContent=t(value.planet);$('event').textContent=t(value.event);
+  const chatAtBottom=$('chat-messages').scrollHeight-$('chat-messages').scrollTop-$('chat-messages').clientHeight<32;
+  for(const line of value.chat||[]){if(line.sequence<=lastChatSequence)continue;lastChatSequence=line.sequence;const message=document.createElement('p');message.textContent=line.name+'  '+line.text;$('chat-messages').append(message);while($('chat-messages').children.length>50)$('chat-messages').firstChild.remove();if($('chat-panel').hidden)unreadChat++;}
+  if(unreadChat)$('chat-toggle').textContent=t('Czat · {0}',unreadChat);
+  if(chatAtBottom)$('chat-messages').scrollTop=$('chat-messages').scrollHeight;
+  $('quest').textContent=tMessage(value.quest);
+  $('note').textContent=tMessage(value.note);
+  value.vitals.forEach((amount,i)=>{const value=Math.max(0,Math.min(100,amount));$(`vital-number-${i}`).textContent=Math.round(value)+'%';$(`vital-fill-${i}`).style.width=value+'%';});
+  $('meters').classList.toggle('danger',value.vitals[0]<30||value.vitals[1]<20);
+  $('cargo').textContent=t('Plecak {0}/{1} kg',value.cargo_kg.toFixed(1),value.creative?'∞':value.cargo_limit??35);
+  $('grant').hidden=!value.creative;$('quest').hidden=!!value.quests_disabled||questCollapsed;$('quest-toggle').hidden=!!value.quests_disabled;
+  value.cargo.forEach((count,kind)=>{
+    const option=dropItem.options[kind];
+    option.textContent=`${t(itemNames[kind])} × ${count}`;
+    option.disabled=count===0&&!value.creative;
+  });
+  if (value.creative && dropItem.selectedIndex<0) dropItem.selectedIndex=0;
+  if (!value.creative && !value.cargo[dropItem.selectedIndex]) dropItem.selectedIndex=value.cargo.findIndex(count=>count>0);
+  updateDropButtons();
+  const progress=value.scanning||value.mining;
+  $('progress').hidden=progress<=0;$('progress').value=Math.min(1,progress);
+  selection();
+}
+const structureLabels={Airlock:'Śluza',HabitatModule:'Habitat',SolarArray:'Panel słoneczny',RtgGenerator:'Generator RTG',OxygenElectrolyzer:'Generator tlenu',HydroponicsDome:'Szklarnia',StorageBay:'Magazyn',CommsDish:'Antena',ScienceLab:'Laboratorium',ShieldWall:'Osłona'};
+const palettes={Moon:['#666974','#494c58','#959baa','#282f3c'],Mars:['#a76a50','#744936','#c88860','#422d2b'],Venus:['#9a824e','#665537','#c6ad6e','#3c3125']};
+function polygon(points,fill,stroke){
+  ctx.beginPath(); points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();
+  ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.stroke();}
+}
+function sprite(key,x,y,scale,tint){
+  const box=sprites[key];if(!atlas||!box)return false;
+  const [sx,sy,sw,sh]=box;
+  let source=atlas,ox=sx,oy=sy;
+  if(tint){
+    const cacheKey=key+tint;
+    let cached=tintedSprites.get(cacheKey);
+    if(!cached){cached=document.createElement('canvas');cached.width=sw;cached.height=sh;const brush=cached.getContext('2d');brush.drawImage(atlas,sx,sy,sw,sh,0,0,sw,sh);brush.globalCompositeOperation='multiply';brush.fillStyle=tint;brush.fillRect(0,0,sw,sh);brush.globalCompositeOperation='destination-in';brush.drawImage(atlas,sx,sy,sw,sh,0,0,sw,sh);if(tintedSprites.size>192)tintedSprites.clear();tintedSprites.set(cacheKey,cached);}
+    source=cached;ox=oy=0;
+  }
+  ctx.drawImage(source,ox,oy,sw,sh,x-sw*scale/2,y-sh*scale/2,sw*scale,sh*scale);return true;
+}
+const rgba=c=>'rgb('+c.slice(0,3).map(n=>Math.round(n*255)).join(',')+')';
+const visorColors={GoldReflective:'#fac22e',CobaltBlue:'#388cfa',EmeraldHud:'#2eeb85',RubyLaser:'#ff4061',SilverMirror:'#d1e0f5',AmethystVoid:'#bf59ff'};
+const trailColors={PolishWhiteRed:'#ff526b',CyanColdGas:'#59ebff',SolarGold:'#ffd138',IonViolet:'#cc61ff',EmeraldBio:'#47fa8c'};
+function deposit(key,x,y,scale){return sprite(key,x,y,scale*88/(sprites[key]?.[2]||88));}
+function scene(now=performance.now()){
+  requestAnimationFrame(scene);
+  if(!joined)return;
+  if(fpsLimit){
+    if(now+0.5<nextFrame)return;
+    const interval=1000/fpsLimit;
+    nextFrame=nextFrame>now-interval?nextFrame+interval:now+interval;
+  }
+  const dt=Math.max(0,Math.min(.05,(now-lastTick)/1000));lastTick=now;
+  const box=canvas.getBoundingClientRect(), w=box.width,h=box.height;
+  const pixel=Math.min(devicePixelRatio||1,2);
+  if(canvas.width!==Math.round(w*pixel)||canvas.height!==Math.round(h*pixel)){canvas.width=Math.round(w*pixel);canvas.height=Math.round(h*pixel);}
+  ctx.setTransform(pixel,0,0,pixel,0,0);ctx.clearRect(0,0,w,h);
+  if(!data){projections=[];return;}
+  smooth=smooth||data.pos.slice();
+  const blend=1-Math.exp(-dt*22);
+  for(let i=0;i<3;i++){const error=data.pos[i]-smooth[i];smooth[i]=Math.abs(error)>5?data.pos[i]:smooth[i]+error*blend;}
+  const unit=w<600?36:44, half=unit*.5;
+  const scale=unit/44;
+  const project=(x,y,z=0)=>[w*.5+((x-smooth[0])-(y-smooth[1]))*unit,h*.49+((x-smooth[0])+(y-smooth[1]))*half-(z-smooth[2])*28*scale];
+  const palette=palettes[data.body]||palettes.Moon; projections=[];
+  const entities=[];
+  for(const cell of sortedTiles){
+    const [gx,gy,z,kind,structure,feature,,featureId]=cell,[x,y]=project(gx,gy,z);
+    if(x< -unit||y< -unit||x>w+unit||y>h+unit)continue;
+    const alt=Math.abs(gx*41+gy*113)%8;
+    let ground=palette[alt<2?1:0];
+    if(/Ice/.test(kind))ground='#579aaa';if(/Titanium|Ore|Crystal/.test(kind))ground='#706285';
+    if(/Crater/.test(kind))ground=palette[3];
+    const mark=choice?.[0]===gx&&choice?.[1]===gy;
+    const groundKey=kind==='MariaBasalt'?'maria':kind==='CraterRim'?'rim':kind==='CraterFloor'||z<-.25?'floor':'highland';
+    const lit=(data.flare_lights||[]).some(([fx,fy,remaining])=>remaining>(now-receivedAt)/1000&&Math.abs(fx-gx)<=2&&Math.abs(fy-gy)<=2);
+    const worldTint=lit?'#ffde9e':data.ground_tint?rgba(data.ground_tint):null;
+    if(!sprite(groundKey,x,y+6*scale,scale,worldTint))polygon([[x-unit,y],[x,y-half],[x+unit,y],[x,y+half]],ground,'#111b2a55');
+    if(mark&&!hudHidden){ctx.globalAlpha=.48;polygon([[x-unit,y],[x,y-half],[x+unit,y],[x,y+half]],demolishing?'#ee8e69':'#59e5ee','#e1ffff');ctx.globalAlpha=1;}
+    if(cell[6]>0&&!structure&&!feature){const ore={SubsurfaceIceVein:[1,50],TitaniumOutcrop:[2,45],Helium3Deposit:[3,40],RareMeteoriteDeposit:[4,60]}[kind];if(ore){const mining=mark?data.mining*5:0;const amount=Math.max(0,cell[6]-mining);deposit('ore-'+ore[0],x,y,scale*Math.max(.12,Math.sqrt(amount/ore[1])));}}
+    projections.push({x,y,w:unit,h:half,cell});
+    if(structure||feature)entities.push({pos:[gx,gy,z],kind:structure?'building':'feature',label:structure||feature,featureId});
+    if(structure){for(const [dx,dy] of [[1,0],[0,1]]){const next=tileCache.get((gx+dx)+','+(gy+dy));const rooms=['Airlock','HabitatModule','HydroponicsDome','ScienceLab'];if(next&&next[4]&&(next[4]===structure||(rooms.includes(next[4])&&rooms.includes(structure))))entities.push({pos:[gx+dx*.5,gy+dy*.5,(z+next[2])*.5],kind:'connector',label:rooms.includes(structure)?'room':structure==='ShieldWall'?'wall':structure==='SolarArray'?'solar':'industrial'});}}
+  }
+  entities.push({pos:data.station,kind:'station',label:'STACJA'});
+  data.rovers.forEach(([pos,powered,model])=>entities.push({pos,kind:'rover',powered,model}));
+  data.drops.forEach(pos=>entities.push({pos,kind:'drop'}));
+  if(!hudHidden)data.surveys.forEach(([x,y,done,label])=>entities.push({pos:[x,y,tileCache.get(x+','+y)?.[2]||0],kind:'survey',done,label}));
+  const visibleCrew=new Set();
+  data.crew.forEach(([id,label,pos,wave])=>{
+    visibleCrew.add(id);
+    let current=crewMotion.get(id);
+    if(!current){current=pos.slice();crewMotion.set(id,current);}
+    for(let i=0;i<3;i++){const error=pos[i]-current[i];current[i]=Math.abs(error)>5?pos[i]:current[i]+error*blend;}
+    const look=lookCache.get(id);
+    entities.push({label,pos:current,wave,kind:'person',color:look?rgba(look[1]):'#ffb168',appearance:look?.[2],jet:look?.[3]});
+  });
+  for(const id of crewMotion.keys())if(!visibleCrew.has(id))crewMotion.delete(id);
+  entities.push({label:'Ty',pos:smooth,kind:'person',color:'#e9f0f5'});
+  entities.sort((a,b)=>a.pos[0]+a.pos[1]-b.pos[0]-b.pos[1]);
+  ctx.textAlign='center';ctx.font='600 11px Technor, sans-serif';
+  for(const item of entities.filter(item=>['person','rover','station'].includes(item.kind))){const [x,y]=project(...item.pos);sprite('shadow',x,y,scale*(item.kind==='person'?.8:1.2));}
+  for(const item of entities){
+    const [x,y]=project(...item.pos);
+    if(x< -35||y< -35||x>w+35||y>h+35)continue;
+    if(item.kind==='person'){
+      const frame=item.label==='Ty'&&Math.hypot(...direction)>.1?1+Math.floor(performance.now()/180)%2:0;
+      if(sprite('astronaut-1-'+frame,x,y-22*scale,scale,item.color)){
+        sprite('visor-1',x,y-22*scale,scale,visorColors[item.appearance?.visor]||'#fac22e');
+        sprite('accessory-'+(item.appearance?.accessory||'StandardAntenna'),x,y-22*scale,scale);
+        if(item.jet)sprite('thrust',x,y-2*scale,scale*.22,trailColors[item.appearance?.trail]||'#59ebff');
+        if(!hudHidden){ctx.fillStyle='#edf7ff';ctx.fillText(item.label==='Ty'?t('Ty'):item.label,x,y-52*scale);}continue;
+      }
+      ctx.fillStyle='#09111b88';ctx.beginPath();ctx.ellipse(x,y+4,9,4,0,0,7);ctx.fill();
+      ctx.fillStyle=item.color;ctx.fillRect(x-6,y-13,12,13);
+      ctx.beginPath();ctx.arc(x,y-18,7,0,7);ctx.fill();
+      ctx.fillStyle='#17354b';ctx.fillRect(x-4,y-20,8,4);
+      if(item.wave){ctx.fillStyle=item.color;ctx.fillRect(x+7,y-20,5,7);}
+      if(!hudHidden){ctx.fillStyle='#fff';ctx.fillText(item.label==='Ty'?t('Ty'):item.label,x,y-29);}
+    }else if(item.kind==='drop'){
+      polygon([[x-4,y],[x,y-4],[x+4,y],[x,y+4]],'#ffe79c','#162035');
+    }else if(item.kind==='survey'){
+      ctx.fillStyle=item.done?'#86d995':'#d7a9ff';ctx.fillRect(x-1,y-20,2,20);
+      polygon([[x-5,y-20],[x,y-25],[x+5,y-20],[x,y-15]],ctx.fillStyle);
+      ctx.fillText(t(item.label),x,y-30);
+    }else if(item.kind==='connector'){
+      sprite('connector-'+item.label,x,y-18*scale,scale,data.ground_tint?rgba(data.ground_tint):null);
+    }else if(item.kind==='feature'){
+      if(item.featureId==='GlowingCrystalCluster')deposit('ore-1',x,y,scale*.95);
+      else sprite('feature-'+item.featureId,x,y-22*scale,scale,data.ground_tint?rgba(data.ground_tint):null);
+    }else{
+      const station=item.kind==='station', rover=item.kind==='rover';
+      const spriteKey=station?'station':rover?'rover-'+(item.model==='LightBuggy'?'light':'heavy')+'-'+Math.floor(performance.now()/180)%3:'building-'+item.label;
+      if(station&&item.pos[2]-(tileCache.get(Math.round(item.pos[0])+','+Math.round(item.pos[1]))?.[2]||0)>.2){sprite('thrust',x-19*scale,y+6*scale,scale*.6);sprite('thrust',x+19*scale,y+6*scale,scale*.6);}
+      const room=['Airlock','HabitatModule','HydroponicsDome','ScienceLab'].includes(item.label);
+      const distance=Math.max(Math.abs(item.pos[0]-smooth[0]),Math.abs(item.pos[1]-smooth[1]));
+      if(room)sprite('interior',x,y+2*scale,scale);
+      ctx.globalAlpha=room&&data.inside&&distance<=3?.28:1;
+      const drawn=sprite(spriteKey,x,y-(station?36:rover?18:20)*scale,scale,data.ground_tint&&!rover&&!station?rgba(data.ground_tint):null);
+      ctx.globalAlpha=1;
+      if(drawn){if(room){ctx.globalAlpha=data.inside&&distance<=4?.06:distance<=1?.22:.94;sprite('roof',x,y-22*scale,scale,data.ground_tint?rgba(data.ground_tint):null);ctx.globalAlpha=1;}continue;}
+      const r=station?unit*1.15:unit*.68, tall=station?24:rover?9:17;
+      const shade=rover?'#e5a45c':station?'#b1d9ed':item.label==='SolarArray'?'#4aa0c6':'#b1bbc6';
+      polygon([[x-r,y-tall],[x,y+half*.7-tall],[x+r,y-tall],[x,y-half*.7-tall]],shade,'#26374b');
+      polygon([[x-r,y-tall],[x,y+half*.7-tall],[x,y+half*.7],[x-r,y]],station?'#6886a8':'#526270','#26374b');
+      polygon([[x+r,y-tall],[x,y+half*.7-tall],[x,y+half*.7],[x+r,y]],'#344c62','#26374b');
+      if(!hudHidden&&(station||rover)){ctx.fillStyle='#fff';ctx.fillText(t(station?'STACJA':'ŁAZIK'),x,y-tall-9);}
+    }
+  }
+  if(performance.now()-connection>3500){ctx.fillStyle='#061020bb';ctx.fillRect(0,0,w,h);ctx.fillStyle='#fff';ctx.fillText(t('Czekam na hosta…'),w/2,h/2);}
+}
+requestAnimationFrame(scene);
+</script>
+</body>
+</html>

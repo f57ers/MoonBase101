@@ -1,0 +1,45 @@
+[package]
+name = "moon-base-101"
+version = "0.1.0"
+edition = "2021"
+authors = ["Senior Rust Game Architect"]
+description = "Moon Base 101: isometric lunar survival, base building, and space mission design"
+
+[features]
+default = ["linux-x11"]
+linux-x11 = ["bevy/x11"]
+linux-wayland = ["bevy/wayland", "winit/wayland-dlopen"]
+
+[dependencies]
+moon-base-localize = { path = "localize" }
+bevy = { version = "=0.13.2", default-features = false, features = [
+    "bevy_asset",
+    "bevy_core_pipeline",
+    "bevy_gizmos",
+    "bevy_render",
+    "bevy_sprite",
+    "bevy_text",
+    "bevy_ui",
+    "bevy_winit",
+    "default_font",
+    "multi-threaded",
+    "png",
+] }
+rand = "=0.8.8"
+rodio = { version = "=0.17.3", default-features = false }
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.154"
+tiny_http = "=0.12.0"
+if-addrs = "=0.13.4"
+image = { version = "=0.24.9", default-features = false, features = ["png"] }
+winit = { version = "=0.29.15", default-features = false }
+tungstenite = { version = "=0.24.0", default-features = false, features = ["handshake"] }
+
+[target.'cfg(windows)'.dependencies]
+base64 = "=0.21.7"
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
