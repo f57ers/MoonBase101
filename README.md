@@ -1,4 +1,6 @@
 # Moon Base 101 — księżycowa ekspedycja
+## Sadly the whole game is vibe coded but there are plans to actually learn and make something similar without the use of clankers
+the game is using primitive shapes to render stuff same with audio it does not exist anywhere its all just noises generated with code i did my best to try and understand the Rust code running all of this but i am a mere beginner
 
 Gra desktopowa w Rust / Bevy 0.13.2: eksploracja izometrycznego Księżyca,
 wydobycie, budowanie bazy, przetrwanie i projektowanie misji.
